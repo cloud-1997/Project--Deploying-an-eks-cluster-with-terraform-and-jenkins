@@ -7,6 +7,10 @@ pipeline {
         AWS_DEFAULT_REGION = "us-east-1"
     }
 
+    parameters {
+        choice(name: 'ACTION', choices: ['apply', 'destroy'], description: 'Select whether to apply or destroy the infrastructure.')
+    }
+
     stages {
         stage('Checkout of the GitHub Repo') {
             steps {
@@ -56,27 +60,25 @@ pipeline {
             }
         }
 
-          stage('Approval of the code') {
+        stage('Approval of the Code') {
             steps {
                 script {
                     dir('eks-terra') {
-                    input message: 'Aprove to proceed with the terraform apply?', ok:'proceed'
-
+                        input message: 'Approve to proceed with the Terraform apply?', ok: 'Proceed'
                     }
                 }
             }
         }
 
-        stage('Create/Destroy the terraform code') {
+        stage('Creating or Destroying the Infra') {
             steps {
                 script {
+                    def action = params.ACTION
                     dir('eks-terra') {
-                        sh 'terraform $action -auto-approve'
-
+                        sh "terraform ${action} -auto-approve"
                     }
                 }
             }
         }
-
     }
 }
